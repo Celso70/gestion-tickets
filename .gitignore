@@ -1,0 +1,12 @@
+bin/
+obj/
+.vscode/
+*.user
+*.suo
+*.log
+*.db
+.env
+*.sqlite
+*.pdb
+*.cache
+*.DS_Store
