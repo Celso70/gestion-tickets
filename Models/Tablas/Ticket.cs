@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;//para los atributos de configuracion de modelos
 using System.ComponentModel.DataAnnotations.Schema;//especificar nombre exacto de tablas/claves foraneas/not mappeds,etc
+using GestionTickets.Models.Usuario;
 
-namespace GestionTickets.Models
+namespace GestionTickets.Models.Tablas
 {
     public class Ticket
     {
@@ -22,7 +23,7 @@ namespace GestionTickets.Models
         public PrioridadEnum Prioridad { get; set; }
 
         public DateTime FechaCreacion { get; set; }
-
+        
         public DateTime? FechaCierre { get; set; }
 
 //RELACIONES
@@ -41,7 +42,7 @@ namespace GestionTickets.Models
         //traemos clave foranea usuario
         [ForeignKey("UsuarioCliente")]
         public string? UsuarioClienteID { get; set; }
-        //traemos el objeto completo de categoria
+        //traemos el objeto completo de usuario
         public ApplicationUser? UsuarioCliente { get; set; }
 
     //Comentarios

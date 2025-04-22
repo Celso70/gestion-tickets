@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 
 
-namespace GestionTickets.Models //utilizamos namespace por si en un futuro usamos una clase con el mismo nombre, para evitar conflictos
+namespace GestionTickets.Models.Usuario //utilizamos namespace por si en un futuro usamos una clase con el mismo nombre, para evitar conflictos
 {
 
     
@@ -12,3 +12,4 @@ namespace GestionTickets.Models //utilizamos namespace por si en un futuro usamo
         public DateTime FechaNacimiento { get; set;}
 }
 }
+

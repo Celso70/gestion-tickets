@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations; //para los atributos de configuracion de modelos
 
-namespace GestionTickets.Models
+
+namespace GestionTickets.Models.Tablas
 {
     public class Categoria
     {

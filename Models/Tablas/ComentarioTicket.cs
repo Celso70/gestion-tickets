@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using GestionTickets.Models.Usuario;
 
-namespace GestionTickets.Models
+namespace GestionTickets.Models.Tablas
 {
     public class ComentarioTicket
     {

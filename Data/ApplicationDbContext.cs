@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using GestionTickets.Models; //Desde donde traigo la clase del Usuario("ApplicationUser")
-
+using GestionTickets.Models.Tablas; //Desde donde traigo las tablas
+using GestionTickets.Models.Usuario;//Desde donde traigo el ApplicationUser
 
 namespace GestionTickets.Data //en caso de precaución
 {

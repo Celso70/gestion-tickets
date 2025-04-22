@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-using GestionTickets.Models; //por ApplicationUser
+using GestionTickets.Models.Usuario; //por ApplicationUser
 using GestionTickets.Data;  //por ApplicationDbContext
 
 
@@ -46,6 +46,7 @@ builder.Services.AddAuthentication(options =>
 
 //Para los [Authorize] en los controladores
 builder.Services.AddAuthorization();
+builder.Services.AddControllers();
 
 // 🧭 Swagger y explorador de endpoints 
 builder.Services.AddEndpointsApiExplorer();
@@ -62,6 +63,7 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+
 
 var app = builder.Build();
 
