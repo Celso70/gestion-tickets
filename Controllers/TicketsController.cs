@@ -81,10 +81,11 @@ namespace GestionTickets.Controllers
             {
                 Titulo = dto.Titulo,
                 Descripcion = dto.Descripcion,
-                Estado = dto.Estado,
+                Estado = EstadoEnum.Abierto,
                 Prioridad = dto.Prioridad,
                 CategoriaID = dto.CategoriaID,
-                FechaCreacion = DateTime.UtcNow
+                FechaCreacion = DateTime.UtcNow,
+                FechaCierre = null
             };
 
             //Agregamos el Ticket
@@ -107,6 +108,7 @@ namespace GestionTickets.Controllers
                 Estado = ticket.Estado,
                 Prioridad = ticket.Prioridad,
                 FechaCreacion = ticket.FechaCreacion,
+                FechaCierre = ticket.FechaCierre,
                 CategoriaID = ticket.CategoriaID,
                 CategoriaDescripcion = categoria?.Descripcion
             });
@@ -119,22 +121,22 @@ namespace GestionTickets.Controllers
             //Hallamos el ticket segun su ID
             var ticket = await _context.Tickets.FindAsync(id);
 
-            //Si no en cuentra
+            //Si no encuentra
             if (ticket == null)
                 return NotFound();
 
             //Si encuentra
             ticket.Titulo = dto.Titulo;
             ticket.Descripcion = dto.Descripcion;
-            ticket.Estado = dto.Estado;
+            // ticket.Estado = dto.Estado;
             ticket.Prioridad = dto.Prioridad;
             ticket.CategoriaID = dto.CategoriaID;
 
             //Si el estado del Ticket es "cerrado" o "cancelado", se establece la fecha de cierre
-            if (ticket.Estado == EstadoEnum.Cerrado || ticket.Estado == EstadoEnum.Cancelado)
-                ticket.FechaCierre = DateTime.UtcNow;
-            else
-                ticket.FechaCierre = null;
+            // if (ticket.Estado == EstadoEnum.Cerrado || ticket.Estado == EstadoEnum.Cancelado)
+            //     ticket.FechaCierre = DateTime.UtcNow;
+            // else
+            //     ticket.FechaCierre = null;
 
             //Guardamos los cambios
             await _context.SaveChangesAsync();
@@ -156,7 +158,7 @@ namespace GestionTickets.Controllers
             //Y guardamos los cambios
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Content("Ticket eliminado");
         }
     }
 }
