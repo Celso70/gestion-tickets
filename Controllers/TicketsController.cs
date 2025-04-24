@@ -1,139 +1,162 @@
-// using Microsoft.AspNetCore.Mvc;
-// using Microsoft.EntityFrameworkCore;
-// using GestionTickets.Data;
-// using GestionTickets.DTOs.Tickets;
-// using GestionTickets.Models.Tablas;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using GestionTickets.Data;
+using GestionTickets.DTOs.Tickets;
+using GestionTickets.Models.Tablas;
 
-// namespace GestionTickets.Controllers
-// {
-//     [Route("api/[controller]")]
-//     [ApiController]
-//     public class TicketsController : ControllerBase
-//     {
-//         private readonly ApplicationDbContext _context;
+namespace GestionTickets.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class TicketsController : ControllerBase
+    {
+        private readonly ApplicationDbContext _context;
 
-//         public TicketsController(ApplicationDbContext context)
-//         {
-//             _context = context;
-//         }
+        public TicketsController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
-//         // GET: api/Tickets
-//         [HttpGet]
-//         public async Task<ActionResult<IEnumerable<TicketDTO>>> GetTickets()
-//         {
-//             var tickets = await _context.Tickets
-//                 .Include(t => t.Categoria)
-//                 .Select(t => new TicketDTO
-//                 {
-//                     TicketID = t.TicketID,
-//                     Titulo = t.Titulo,
-//                     Descripcion = t.Descripcion,
-//                     Estado = t.Estado,
-//                     Prioridad = t.Prioridad,
-//                     FechaCreacion = t.FechaCreacion,
-//                     FechaCierre = t.FechaCierre,
-//                     CategoriaID = t.CategoriaID,
-//                     CategoriaDescripcion = t.Categoria.Descripcion,
-//                     UsuarioClienteID = t.UsuarioClienteID
-//                 }).ToListAsync();
+        //Método GET "Obtener Tickets"
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<TicketDTO>>> GetTickets()
+        {
+            //Hallamos todos los tickets
+            var tickets = await _context.Tickets
+            //Segun ID de la categoría
+                .Include(t => t.Categoria)
+            //A modo de lista
+                .ToListAsync();
+            
+            //Detalle de como luce el ticket
+            return tickets.Select(t => new TicketDTO
+                {
+                    TicketID = t.TicketID,
+                    Titulo = t.Titulo,
+                    Descripcion = t.Descripcion,
+                    Estado = t.Estado,
+                    Prioridad = t.Prioridad,
+                    FechaCreacion = t.FechaCreacion,
+                    FechaCierre = t.FechaCierre,
+                    CategoriaID = t.CategoriaID,
+                    CategoriaDescripcion = t.Categoria?.Descripcion,
+                }).ToList();
+        }
 
-//             return Ok(tickets);
-//         }
+        //Método GET "Obtener UN Ticket"
+        [HttpGet("{id}")]
+        public async Task<ActionResult<TicketDTO>> GetTicket(int id)
+        {
+            //Hallamos todos los tickets
+            var ticket = await _context.Tickets
+            //Segun el ID
+                .Include(t => t.Categoria)
+                .FirstOrDefaultAsync(t => t.TicketID == id);
 
-//         // GET: api/Tickets/5
-//         [HttpGet("{id}")]
-//         public async Task<ActionResult<TicketDTO>> GetTicket(int id)
-//         {
-//             var ticket = await _context.Tickets
-//                 .Include(t => t.Categoria)
-//                 .FirstOrDefaultAsync(t => t.TicketID == id);
+            //Si no lo encuentra
+            if (ticket == null)
+                return NotFound();
 
-//             if (ticket == null)
-//                 return NotFound();
+            //Si lo encuentra, demuestra el listado
+            return new TicketDTO
+            {
+                TicketID = ticket.TicketID,
+                Titulo = ticket.Titulo,
+                Descripcion = ticket.Descripcion,
+                Estado = ticket.Estado,
+                Prioridad = ticket.Prioridad,
+                FechaCreacion = ticket.FechaCreacion,
+                FechaCierre = ticket.FechaCierre,
+                CategoriaID = ticket.CategoriaID,
+                CategoriaDescripcion = ticket.Categoria?.Descripcion,
+            };
+        }
 
-//             var dto = new TicketDTO
-//             {
-//                 TicketID = ticket.TicketID,
-//                 Titulo = ticket.Titulo,
-//                 Descripcion = ticket.Descripcion,
-//                 Estado = ticket.Estado,
-//                 Prioridad = ticket.Prioridad,
-//                 FechaCreacion = ticket.FechaCreacion,
-//                 FechaCierre = ticket.FechaCierre,
-//                 CategoriaID = ticket.CategoriaID,
-//                 CategoriaDescripcion = ticket.Categoria?.Descripcion,
-//                 UsuarioClienteID = ticket.UsuarioClienteID
-//             };
+        //Método POST "Crear Ticket"
+        [HttpPost]
+        public async Task<ActionResult<TicketDTO>> PostTicket(TicketCrearEditarDTO dto)
+        {
+            //Indicamos los campos del Ticket "a crear"
+            var ticket = new Ticket
+            {
+                Titulo = dto.Titulo,
+                Descripcion = dto.Descripcion,
+                Estado = dto.Estado,
+                Prioridad = dto.Prioridad,
+                CategoriaID = dto.CategoriaID,
+                FechaCreacion = DateTime.UtcNow
+            };
 
-//             return Ok(dto);
-//         }
+            //Agregamos el Ticket
+            _context.Tickets.Add(ticket);
+            //Y guardamos los cambios
+            await _context.SaveChangesAsync();
 
-//         // POST: api/Tickets
-//         [HttpPost]
-//         public async Task<ActionResult<TicketDTO>> PostTicket(TicketCrearEditarDTO dto)
-//         {
-//             var ticket = new Ticket
-//             {
-//                 Titulo = dto.Titulo,
-//                 Descripcion = dto.Descripcion,
-//                 Estado = dto.Estado,
-//                 Prioridad = dto.Prioridad,
-//                 FechaCreacion = DateTime.UtcNow,
-//                 FechaCierre = dto.FechaCierre,
-//                 CategoriaID = dto.CategoriaID,
-//                 UsuarioClienteID = dto.UsuarioClienteID
-//             };
+            var categoria = await _context.Categorias.FindAsync(dto.CategoriaID);
 
-//             _context.Tickets.Add(ticket);
-//             await _context.SaveChangesAsync();
+            //RESPUESTA TRAS HABER CREADO EL TICKET(UN CÓDIGO DE ESTADO HTTP 201(Created)
+            //Mostramos el Ticket creado gracias al endpoint anterior de "GetTicket"
+            return CreatedAtAction(nameof(GetTicket), new { id = ticket.TicketID }, 
 
-//             return CreatedAtAction(nameof(GetTicket), new { id = ticket.TicketID }, new TicketDTO
-//             {
-//                 TicketID = ticket.TicketID,
-//                 Titulo = ticket.Titulo,
-//                 Descripcion = ticket.Descripcion,
-//                 Estado = ticket.Estado,
-//                 Prioridad = ticket.Prioridad,
-//                 FechaCreacion = ticket.FechaCreacion,
-//                 FechaCierre = ticket.FechaCierre,
-//                 CategoriaID = ticket.CategoriaID,
-//                 UsuarioClienteID = ticket.UsuarioClienteID,
-//                 CategoriaDescripcion = (await _context.Categorias.FindAsync(ticket.CategoriaID))?.Descripcion
-//             });
-//         }
+            //Mostramos el Ticket en cuestion:
+            new TicketDTO
+            {
+                TicketID = ticket.TicketID,
+                Titulo = ticket.Titulo,
+                Descripcion = ticket.Descripcion,
+                Estado = ticket.Estado,
+                Prioridad = ticket.Prioridad,
+                FechaCreacion = ticket.FechaCreacion,
+                CategoriaID = ticket.CategoriaID,
+                CategoriaDescripcion = categoria?.Descripcion
+            });
+        }
 
-//         // PUT: api/Tickets/5
-//         [HttpPut("{id}")]
-//         public async Task<IActionResult> PutTicket(int id, TicketCrearEditarDTO dto)
-//         {
-//             var ticket = await _context.Tickets.FindAsync(id);
-//             if (ticket == null)
-//                 return NotFound();
+        //Método PUT "Editar Ticket"
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutTicket(int id, TicketCrearEditarDTO dto)
+        {
+            //Hallamos el ticket segun su ID
+            var ticket = await _context.Tickets.FindAsync(id);
 
-//             ticket.Titulo = dto.Titulo;
-//             ticket.Descripcion = dto.Descripcion;
-//             ticket.Estado = dto.Estado;
-//             ticket.Prioridad = dto.Prioridad;
-//             ticket.FechaCierre = dto.FechaCierre;
-//             ticket.CategoriaID = dto.CategoriaID;
-//             ticket.UsuarioClienteID = dto.UsuarioClienteID;
+            //Si no en cuentra
+            if (ticket == null)
+                return NotFound();
 
-//             await _context.SaveChangesAsync();
-//             return NoContent();
-//         }
+            //Si encuentra
+            ticket.Titulo = dto.Titulo;
+            ticket.Descripcion = dto.Descripcion;
+            ticket.Estado = dto.Estado;
+            ticket.Prioridad = dto.Prioridad;
+            ticket.CategoriaID = dto.CategoriaID;
 
-//         // DELETE: api/Tickets/5
-//         [HttpDelete("{id}")]
-//         public async Task<IActionResult> DeleteTicket(int id)
-//         {
-//             var ticket = await _context.Tickets.FindAsync(id);
-//             if (ticket == null)
-//                 return NotFound();
+            //Si el estado del Ticket es "cerrado" o "cancelado", se establece la fecha de cierre
+            if (ticket.Estado == EstadoEnum.Cerrado || ticket.Estado == EstadoEnum.Cancelado)
+                ticket.FechaCierre = DateTime.UtcNow;
+            else
+                ticket.FechaCierre = null;
 
-//             _context.Tickets.Remove(ticket);
-//             await _context.SaveChangesAsync();
+            //Guardamos los cambios
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
 
-//             return NoContent();
-//         }
-//     }
-// }
+        //Método DELETE "Eliminar un Ticket"
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteTicket(int id)
+        {   
+            //Hallamos el ticket segun su ID
+            var ticket = await _context.Tickets.FindAsync(id);
+            //Si no lo encuentra
+            if (ticket == null)
+                return NotFound();
+
+            //Si lo encuentra, lo eliminamos
+            _context.Tickets.Remove(ticket);
+            //Y guardamos los cambios
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+    }
+}
